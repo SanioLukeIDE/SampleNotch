@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/perform_screenshot"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Take Screenshot" />
+
+            <Button
+                android:id="@+id/toggle_flashlight"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:text="Toggle Flashlight" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/open_power_long_press_menu"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Open the power long-press menu" />
+
+            <Button
+                android:id="@+id/open_min_app_drawer"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="Minimized applications drawer" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/open_camera"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Open camera! make sense?" />
+
+            <Button
+                android:id="@+id/open_recent_apps"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="Open recent apps menu" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/toggle_auto_orientations"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Automatic orientations" />
+
+            <Button
+                android:id="@+id/toggle_dnd"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="Do Not Disturb" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/open_qr_codes"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="QR code reader" />
+
+            <Button
+                android:id="@+id/open_website"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="open a website" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/open_quick_dial"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Quick Dial" />
+
+            <Button
+                android:id="@+id/toggle_music_play_pause"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="Play/Pause music" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/play_next_music"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="play next music" />
+
+            <Button
+                android:id="@+id/play_previous_music"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="play previous music" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/switch_screen_brightness"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Switch Screen Brightness" />
+
+            <Button
+                android:id="@+id/toggle_sound_mute_mode"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="Toggle (sound/mute)" />
+
+        </LinearLayout>
+ eQ
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/toggle_sound_vibrate_mode"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Toggle (sound/vibrate)" />
+
+            <Button
+                android:id="@+id/turn_screen_off"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="Turn Screen Off" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
