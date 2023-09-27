@@ -19,6 +19,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.media.AudioManager;
 import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -128,6 +129,37 @@ public class MainActivity extends AppCompatActivity {
 
         binding.toggleAutoOrientations.setOnClickListener(v->{
             requestWriteSettingsPermission();
+        });
+
+        binding.playNextMusic.setOnClickListener(v->{
+            /*if (audioManager.isMusicActive()) {
+                if (mediaSession.getController().getPlaybackState().getState()
+                        == PlaybackState.STATE_PLAYING) {
+                    mediaSession.setPlaybackState(new PlaybackState.Builder()
+                            .setState(PlaybackState.STATE_PAUSED, 0, 0)
+                            .build());
+                } else {
+                    mediaSession.setPlaybackState(new PlaybackState.Builder()
+                            .setState(PlaybackState.STATE_PLAYING, 0, 0)
+                            .build());
+                }
+            }*/
+
+            if (audioManager.isMusicActive() && mediaSession != null) {
+                PlaybackState playbackState = mediaSession.getController().getPlaybackState();
+                if (playbackState != null) {
+                    int currentState = playbackState.getState();
+                    int newState = (currentState == PlaybackState.STATE_PLAYING)
+                            ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING;
+
+                    mediaSession.setPlaybackState(new PlaybackState.Builder()
+                            .setState(newState, 0, 0)
+                            .build());
+                }
+                else{
+                    Toast.makeText(this, "No Playback state !!!", Toast.LENGTH_SHORT).show();
+                }
+            }
         });
     }
 
