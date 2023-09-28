@@ -15,26 +15,78 @@
 
         <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:layout_marginBottom="30dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Change Brightness" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <ImageView
+                    android:id="@+id/bright_low_img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_brightness_low"
+                    app:tint="#6C6C6C" />
+
+                <SeekBar
+                    android:id="@+id/changeBrightnessSeekbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginHorizontal="10dp"
+                    android:layout_toStartOf="@+id/bright_high_img"
+                    android:layout_toEndOf="@+id/bright_low_img"
+                    android:max="255"
+                    android:min="1"
+                    android:progressTint="#2196F3"
+                    android:thumbTint="#2196F3" />
+
+                <ImageView
+                    android:id="@+id/bright_high_img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_brightness_high"
+                    app:tint="#2196F3" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
             android:gravity="center"
             android:orientation="horizontal"
-            android:layout_marginHorizontal="20dp"
             android:weightSum="2">
 
             <Button
-                android:id="@+id/perform_screenshot"
+                android:id="@+id/open_camera"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Take Screenshot" />
+                android:layout_weight="1"
+                android:text="Open camera! make sense?" />
 
             <Button
                 android:id="@+id/toggle_flashlight"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
                 android:text="Toggle Flashlight" />
 
         </LinearLayout>
@@ -43,106 +95,25 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
             android:gravity="center"
             android:orientation="horizontal"
-            android:layout_marginHorizontal="20dp"
-            android:weightSum="2">
-
-            <Button
-                android:id="@+id/open_power_long_press_menu"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Open the power long-press menu" />
-
-            <Button
-                android:id="@+id/open_min_app_drawer"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:text="Minimized applications drawer" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:layout_marginHorizontal="20dp"
-            android:weightSum="2">
-
-            <Button
-                android:id="@+id/open_camera"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Open camera! make sense?" />
-
-            <Button
-                android:id="@+id/open_recent_apps"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:text="Open recent apps menu" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:layout_marginHorizontal="20dp"
             android:weightSum="2">
 
             <Button
                 android:id="@+id/toggle_auto_orientations"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Automatic orientations" />
-
-            <Button
-                android:id="@+id/toggle_dnd"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:text="Do Not Disturb" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:layout_marginHorizontal="20dp"
-            android:weightSum="2">
-
-            <Button
-                android:id="@+id/open_qr_codes"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="QR code reader" />
 
             <Button
                 android:id="@+id/open_website"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
                 android:text="open a website" />
 
         </LinearLayout>
@@ -151,25 +122,52 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
             android:gravity="center"
             android:orientation="horizontal"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/switch_screen_brightness"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Switch Screen Brightness" />
+
+            <Button
+                android:id="@+id/toggle_dnd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:text="Do Not Disturb" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:layout_marginHorizontal="20dp"
+            android:gravity="center"
+            android:orientation="horizontal"
             android:weightSum="2">
 
             <Button
                 android:id="@+id/open_quick_dial"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Quick Dial" />
 
             <Button
                 android:id="@+id/toggle_music_play_pause"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
                 android:text="Play/Pause music" />
 
         </LinearLayout>
@@ -178,25 +176,25 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
             android:gravity="center"
             android:orientation="horizontal"
-            android:layout_marginHorizontal="20dp"
             android:weightSum="2">
 
             <Button
                 android:id="@+id/play_next_music"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="play next music" />
 
             <Button
                 android:id="@+id/play_previous_music"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
                 android:text="play previous music" />
 
         </LinearLayout>
@@ -205,52 +203,106 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
             android:gravity="center"
             android:orientation="horizontal"
-            android:layout_marginHorizontal="20dp"
             android:weightSum="2">
-
-            <Button
-                android:id="@+id/switch_screen_brightness"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Switch Screen Brightness" />
 
             <Button
                 android:id="@+id/toggle_sound_mute_mode"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:layout_weight="1"
                 android:text="Toggle (sound/mute)" />
-
-        </LinearLayout>
- eQ
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:layout_marginHorizontal="20dp"
-            android:weightSum="2">
 
             <Button
                 android:id="@+id/toggle_sound_vibrate_mode"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
                 android:text="Toggle (sound/vibrate)" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/perform_screenshot"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Take Screenshot" />
+
+            <Button
+                android:id="@+id/open_recent_apps"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:text="Open recent apps menu" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/open_qr_codes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="QR code reader" />
+
+            <Button
+                android:id="@+id/open_min_app_drawer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:text="Minimized applications drawer" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/open_power_long_press_menu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Open the power long-press menu" />
 
             <Button
                 android:id="@+id/turn_screen_off"
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
                 android:text="Turn Screen Off" />
 
         </LinearLayout>

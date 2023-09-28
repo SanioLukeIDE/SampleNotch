@@ -8,31 +8,42 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
+import android.hardware.display.DisplayManager;
 import android.media.AudioManager;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Surface;
+import android.view.Display;
+import android.view.DisplayCutout;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.appslock.fingerprint.samplenotchapp.databinding.ActivityMainBinding;
 
-import java.util.Objects;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 101;
     private static final int REQUEST_OPEN_CAMERA_PERMISSION = 102;
     private static final int WRITE_SETTINGS_PERMISSION_REQUEST = 103;
+    private static final int ADMIN_PERMISSION_REQUEST = 104;
     private static final int NOTIFICATION_PERMISSION_RC = 123;
 
     private CameraManager cameraManager;
@@ -54,14 +66,43 @@ public class MainActivity extends AppCompatActivity {
 
     // Music Play/Pause Toggle
     private MediaSession mediaSession;
+    DisplayCutout displayCutout;
+    private Rect notchArea;
 
-    @SuppressLint("QueryPermissionsNeeded")
+    // Lock the Screen
+    private DevicePolicyManager devicePolicyManager;
+    private ComponentName mComponentName;
+    private ActivityManager activityManager;
+
+    @SuppressLint({"QueryPermissionsNeeded", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        Intent NotchServiceIntent = new Intent(this, NotchService.class);
+        startService(NotchServiceIntent);
+
+        // Lock the Screen
+        devicePolicyManager= (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
+        activityManager= (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        mComponentName= new ComponentName(MainActivity.this, NotchDeviceAdminReceiver.class);
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            binding.changeBrightnessSeekbar.setMin(1);
+        }
+        if (Settings.System.canWrite(this)) {
+            try {
+                binding.changeBrightnessSeekbar.setProgress(Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS));
+            } catch (Settings.SettingNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        defineNotchPosition();
 
         cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
         createNotificationChannel();
@@ -77,17 +118,17 @@ public class MainActivity extends AppCompatActivity {
         // Music Play/Pause Toggle
         mediaSession = new MediaSession(this, "MyMediaSession");
 
+        binding.openPowerLongPressMenu.setOnClickListener(v -> {});
+
         binding.toggleFlashlight.setOnClickListener(view -> {
             if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
             } else toggleFlashlight();
         });
 
-        binding.turnScreenOff.setOnClickListener(v -> {});
-
         binding.toggleDnd.setOnClickListener(v -> requestNotificationPolicyPermission());
 
-        binding.toggleSoundMuteMode.setOnClickListener(v->{
+        binding.toggleSoundMuteMode.setOnClickListener(v -> {
             if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
                 audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             } else {
@@ -95,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        binding.toggleSoundVibrateMode.setOnClickListener(v->{
+        binding.toggleSoundVibrateMode.setOnClickListener(v -> {
             if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
                 audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             } else {
@@ -103,19 +144,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        binding.openCamera.setOnClickListener(v->{
+        binding.openCamera.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
             } else openCamera();
         });
 
-        binding.openQuickDial.setOnClickListener(v->{
+        binding.openQuickDial.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_DIAL);
             intent.setData(Uri.parse("tel:" + "+918692074192"));
             startActivity(intent);
         });
 
-        binding.openWebsite.setOnClickListener(v->{
+        binding.openQrCodes.setOnClickListener(v -> {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("https://lens.google/#mode/search"));
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "No QR Code Reader installed in your device !! Please install a qr code reader to use this feature. ", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        binding.openWebsite.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"));
             intent.setPackage("com.android.chrome");
             try {
@@ -127,40 +179,115 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        binding.toggleAutoOrientations.setOnClickListener(v->{
-            requestWriteSettingsPermission();
+        binding.toggleAutoOrientations.setOnClickListener(v -> {
+            requestWriteSettingsPermission(1);
         });
 
-        binding.playNextMusic.setOnClickListener(v->{
-            /*if (audioManager.isMusicActive()) {
-                if (mediaSession.getController().getPlaybackState().getState()
-                        == PlaybackState.STATE_PLAYING) {
-                    mediaSession.setPlaybackState(new PlaybackState.Builder()
-                            .setState(PlaybackState.STATE_PAUSED, 0, 0)
-                            .build());
-                } else {
-                    mediaSession.setPlaybackState(new PlaybackState.Builder()
-                            .setState(PlaybackState.STATE_PLAYING, 0, 0)
-                            .build());
-                }
-            }*/
+        binding.switchScreenBrightness.setOnClickListener(v -> {
+            requestWriteSettingsPermission(2);
+        });
 
-            if (audioManager.isMusicActive() && mediaSession != null) {
-                PlaybackState playbackState = mediaSession.getController().getPlaybackState();
-                if (playbackState != null) {
-                    int currentState = playbackState.getState();
-                    int newState = (currentState == PlaybackState.STATE_PLAYING)
-                            ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING;
+        binding.toggleMusicPlayPause.setOnClickListener(v -> {
+            long eventtime = SystemClock.uptimeMillis();
+            if (audioManager.isMusicActive()) {
+                KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE, 0);
+                audioManager.dispatchMediaKeyEvent(downEvent);
 
-                    mediaSession.setPlaybackState(new PlaybackState.Builder()
-                            .setState(newState, 0, 0)
-                            .build());
-                }
-                else{
-                    Toast.makeText(this, "No Playback state !!!", Toast.LENGTH_SHORT).show();
-                }
+                KeyEvent upEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PAUSE, 0);
+                audioManager.dispatchMediaKeyEvent(upEvent);
+            } else {
+                KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY, 0);
+                audioManager.dispatchMediaKeyEvent(downEvent);
+
+                KeyEvent upEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY, 0);
+                audioManager.dispatchMediaKeyEvent(upEvent);
             }
         });
+
+        binding.playNextMusic.setOnClickListener(v -> {
+            long eventTime = SystemClock.uptimeMillis();
+            if (audioManager.isMusicActive()) {
+                KeyEvent upEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT, 0);
+                audioManager.dispatchMediaKeyEvent(upEvent);
+            }
+        });
+
+        binding.playPreviousMusic.setOnClickListener(v -> {
+            long eventTime = SystemClock.uptimeMillis();
+            if (audioManager.isMusicActive()) {
+                KeyEvent upEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
+                audioManager.dispatchMediaKeyEvent(upEvent);
+            }
+        });
+
+        binding.turnScreenOff.setOnClickListener(v -> {
+            if(devicePolicyManager.isAdminActive(mComponentName)) devicePolicyManager.lockNow();
+            else{
+                Intent intent= new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mComponentName);
+                intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "By enabling this device admin permission, you can enable the feature of locking your device");
+                startActivityForResult(intent, ADMIN_PERMISSION_REQUEST);
+            }
+        });
+
+        binding.performScreenshot.setOnClickListener(V->{
+            Intent intent = new Intent("android.intent.action.SCREENSHOT");
+            startActivity(intent);
+        });
+    }
+
+    private void defineNotchPosition() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            DisplayCutout displayCutout = null;
+            Display defaultDisplay = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            if (defaultDisplay == null) {
+                defaultDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).getDisplay(0);
+            }
+            if (defaultDisplay != null) {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        displayCutout = defaultDisplay.getCutout();
+                    }
+                } catch (Throwable unused) {
+                    if (getWindow() != null && getWindow().getDecorView() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                        displayCutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                    }
+                }
+            }
+            if (displayCutout == null && getWindow() != null && getWindow().getDecorView() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                displayCutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+            }
+            if (displayCutout != null) {
+                List<Rect> boundingRects = displayCutout.getBoundingRects();
+                if (!boundingRects.isEmpty()) {
+                    for (Rect rect : boundingRects) {
+                        notchArea= new Rect(rect.left,rect.top,rect.right,rect.bottom);
+                        Log.e("notch_area", "Left : " + rect.left + " & Right : " + rect.right
+                                + " & Top : " + rect.top + " & Bottom : " + rect.bottom);
+                    }
+                }
+            }
+
+
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+
+            if (notchArea != null) {
+                if (notchArea.contains((int) x, (int) y)) {
+                    Toast.makeText(this, "Notch Clicked.....", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Notch not exists", Toast.LENGTH_SHORT).show();
+            }
+        }
+        return super.onTouchEvent(event);
     }
 
 
@@ -172,9 +299,11 @@ public class MainActivity extends AppCompatActivity {
             if (notificationManager != null && notificationManager.isNotificationPolicyAccessGranted()) {
                 toggleDoNotDisturb();
             }
+        } else if (requestCode == WRITE_SETTINGS_PERMISSION_REQUEST) {
+            if (Settings.System.canWrite(this)) changeSystemOrientation();
         }
-        else if (requestCode == WRITE_SETTINGS_PERMISSION_REQUEST) {
-            if (android.provider.Settings.System.canWrite(this)) changeSystemOrientation();
+        else if(requestCode == ADMIN_PERMISSION_REQUEST){
+            if(devicePolicyManager.isAdminActive(mComponentName)) devicePolicyManager.lockNow();
         }
     }
 
@@ -187,8 +316,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Camera permission denied. Cannot use flashlight.", Toast.LENGTH_SHORT).show();
             }
-        }
-        else if (requestCode == REQUEST_OPEN_CAMERA_PERMISSION) {
+        } else if (requestCode == REQUEST_OPEN_CAMERA_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openCamera();
             } else {
@@ -220,24 +348,32 @@ public class MainActivity extends AppCompatActivity {
 
 
     // -------------------------------------------- Toggle Orientations Start -------------------------------------------- //
-    private void requestWriteSettingsPermission() {
+    private void requestWriteSettingsPermission(int option) {
         if (!Settings.System.canWrite(this)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
             intent.setData(Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, WRITE_SETTINGS_PERMISSION_REQUEST);
         } else {
-            changeSystemOrientation();
+            if (option == 1) changeSystemOrientation();
+            else if (option == 2) changeSystemBrightness();
         }
     }
 
     private void changeSystemOrientation() {
         ContentResolver contentResolver = getContentResolver();
-        boolean autoRotateEnabled = android.provider.Settings.System.getInt(
+        boolean autoRotateEnabled = Settings.System.getInt(
                 contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
 
         // Toggle the auto-rotate setting
-        android.provider.Settings.System.putInt(
+        Settings.System.putInt(
                 contentResolver, Settings.System.ACCELEROMETER_ROTATION, autoRotateEnabled ? 0 : 1);
+    }
+    // -------------------------------------------- Toggle Orientations  Start -------------------------------------------- //
+
+
+    // -------------------------------------------- Toggle Orientations  Start -------------------------------------------- //
+    private void changeSystemBrightness() {
+        Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, binding.changeBrightnessSeekbar.getProgress());
     }
     // -------------------------------------------- Toggle Orientations  Start -------------------------------------------- //
 
