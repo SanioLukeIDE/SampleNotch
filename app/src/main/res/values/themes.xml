@@ -6,4 +6,17 @@
     </style>
 
     <style name="Theme.SampleNotchApp" parent="Base.Theme.SampleNotchApp" />
+
+    <style name="Theme.SampleNotchApp.Fullscreen" parent="Theme.SampleNotchApp">
+        <item name="android:actionBarStyle">
+            @style/Widget.Theme.SampleNotchApp.ActionBar.Fullscreen
+        </item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@null</item>
+    </style>
+
+    <style name="ThemeOverlay.SampleNotchApp.FullscreenContainer" parent="">
+        <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
+        <item name="fullscreenTextColor">@color/light_blue_A200</item>
+    </style>
 </resources>
