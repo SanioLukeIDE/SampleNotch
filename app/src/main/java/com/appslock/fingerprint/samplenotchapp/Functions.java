@@ -3,16 +3,25 @@ package com.appslock.fingerprint.samplenotchapp;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
+import android.hardware.display.DisplayManager;
+import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
+import android.view.DisplayCutout;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.RelativeLayout;
 
@@ -24,6 +33,7 @@ public class Functions {
 
     public static final String APP_SETTINGS_PREF_NAME = "AppDetails";
     public static final String STATUSBAR_HEIGHT = "statusBarHeight";
+    public static final String STATUSBAR_WIDTH = "statusBarWidth";
 
     public static void clearSharedPrefs(Context context, String pref_name) {
         SharedPreferences pref = context.getSharedPreferences(pref_name, Context.MODE_PRIVATE);
@@ -129,14 +139,42 @@ public class Functions {
         return false;
     }
 
-    public static int getStatusBarHeight(Context context){
-        Object object= Functions.getSharedPreferences(context, Functions.APP_SETTINGS_PREF_NAME, Functions.STATUSBAR_HEIGHT, "int", 24);
-        return object!=null ? (int) object : 24;
+    public static void setStatusBarHeight(Activity activity) {
+        Rect notchArea = new Rect(0,0,0,0);
+        DisplayCutout displayCutout = null;
+        Display defaultDisplay = ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        if (defaultDisplay == null) {
+            defaultDisplay = ((DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE)).getDisplay(0);
+        }
+        if (defaultDisplay != null) {
+            try {
+                displayCutout = defaultDisplay.getCutout();
+            } catch (Throwable unused) {
+                if (activity.getWindow() != null && activity.getWindow().getDecorView().getRootWindowInsets() != null) {
+                    displayCutout = activity.getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                }
+            }
+        }
+        if (displayCutout != null) {
+            List<Rect> boundingRects = displayCutout.getBoundingRects();
+            if (!boundingRects.isEmpty()) {
+                for (Rect rect : boundingRects) {
+                    notchArea = new Rect(rect.left, rect.top, rect.right, rect.bottom);
+                }
+            }
+        }
+
+        Log.e("notch_area", "Left : " + notchArea.left + " & Right : " + notchArea.right
+                + " & Top : " + notchArea.top + " & Bottom : " + notchArea.bottom);
     }
 
-    public static float dipToPixels(Context context, float dipValue){
+    public static int getStatusBarHeight(Context context) {
+        return Functions.getSharedPreferences(context, Functions.APP_SETTINGS_PREF_NAME, Functions.STATUSBAR_HEIGHT, "int", 24);
+    }
+
+    public static float dipToPixels(Context context, float dipValue) {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,  dipValue, metrics);
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics);
     }
 
 }

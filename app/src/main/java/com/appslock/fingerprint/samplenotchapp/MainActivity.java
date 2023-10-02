@@ -1,5 +1,7 @@
 package com.appslock.fingerprint.samplenotchapp;
 
+import static com.appslock.fingerprint.samplenotchapp.Functions.setStatusBarHeight;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -92,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         mComponentName = new ComponentName(MainActivity.this, NotchDeviceAdminReceiver.class);
 
-
+        setStatusBarHeight(MainActivity.this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             binding.changeBrightnessSeekbar.setMin(1);
         }
@@ -104,7 +106,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        defineNotchPosition();
         saveStatusBarHeight();
 
         cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
@@ -125,8 +126,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, OVERLAY_PERMISSION);
-        }
-        else{
+        } else {
             Intent NotchServiceIntent = new Intent(this, NotchService.class);
             startService(NotchServiceIntent);
         }
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
         int statusBarHeight = rectangle.top;
         int contentViewTop = window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
-        int titleBarHeight= contentViewTop - statusBarHeight;
+        int titleBarHeight = contentViewTop - statusBarHeight;
         Functions.putSharedPreferences(getApplicationContext(), Functions.APP_SETTINGS_PREF_NAME, Functions.STATUSBAR_HEIGHT, "int", titleBarHeight);
     }
 
@@ -173,31 +173,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkNotch() {
         Rect notchBounds = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
-            if (windowInsets!= null) {
-                DisplayCutout displayCutout = windowInsets.getDisplayCutout();
-                if(displayCutout!=null){
-                    List<Rect> boundingRects = displayCutout.getBoundingRects();
-                    if (!boundingRects.isEmpty()) {
-                        for (Rect rect : boundingRects) {
-                            notchBounds = rect;
-                            Log.e("check_notch_position", "Left : "+rect.left+" & Top : "+rect.top+" & Right : "+rect.top+" & Bottom : "+rect.bottom);
-                        }
+        WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
+        if (windowInsets != null) {
+            DisplayCutout displayCutout = windowInsets.getDisplayCutout();
+            if (displayCutout != null) {
+                List<Rect> boundingRects = displayCutout.getBoundingRects();
+                if (!boundingRects.isEmpty()) {
+                    for (Rect rect : boundingRects) {
+                        notchBounds = rect;
+                        Log.e("check_notch_position", "Left : " + rect.left + " & Top : " + rect.top + " & Right : " + rect.top + " & Bottom : " + rect.bottom);
                     }
                 }
             }
         }
-
-
-
-        getWindow().getDecorView().setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Log.e("check", "Touch listening...");
-                return true;
-            }
-        });
     }
 
     private void eventClickListners() {
@@ -268,6 +256,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.toggleMusicPlayPause.setOnClickListener(v -> {
+
+            v.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    return false;
+                }
+            });
             long eventtime = SystemClock.uptimeMillis();
             if (audioManager.isMusicActive()) {
                 KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE, 0);
@@ -315,46 +310,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        binding.openPowerLongPressMenu.setOnClickListener(v->{
+        binding.openPowerLongPressMenu.setOnClickListener(v -> {
             startActivity(new Intent(getApplicationContext(), FullscreenActivity.class));
         });
     }
 
-    private void defineNotchPosition() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            DisplayCutout displayCutout = null;
-            Display defaultDisplay = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-            if (defaultDisplay == null) {
-                defaultDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).getDisplay(0);
-            }
-            if (defaultDisplay != null) {
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        displayCutout = defaultDisplay.getCutout();
-                    }
-                } catch (Throwable unused) {
-                    if (getWindow() != null && getWindow().getDecorView() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                        displayCutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                    }
-                }
-            }
-            if (displayCutout == null && getWindow() != null && getWindow().getDecorView() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                displayCutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-            }
-            if (displayCutout != null) {
-                List<Rect> boundingRects = displayCutout.getBoundingRects();
-                if (!boundingRects.isEmpty()) {
-                    for (Rect rect : boundingRects) {
-                        notchArea = new Rect(rect.left, rect.top, rect.right, rect.bottom);
-                        Log.e("notch_area", "Left : " + rect.left + " & Right : " + rect.right
-                                + " & Top : " + rect.top + " & Bottom : " + rect.bottom);
-                    }
-                }
-            }
-
-
-        }
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -386,15 +346,14 @@ public class MainActivity extends AppCompatActivity {
         } else if (requestCode == WRITE_SETTINGS_PERMISSION_REQUEST) {
             if (Settings.System.canWrite(this)) changeSystemOrientation();
         } else if (requestCode == ADMIN_PERMISSION_REQUEST) {
-            if (devicePolicyManager.isAdminActive(mComponentName)) devicePolicyManager.lockNow();
-        }
-        else if(requestCode == OVERLAY_PERMISSION){
+            if (devicePolicyManager.isAdminActive(mComponentName))
+                devicePolicyManager.lockNow();
+        } else if (requestCode == OVERLAY_PERMISSION) {
             if (Settings.canDrawOverlays(this)) {
                 Intent NotchServiceIntent = new Intent(this, NotchService.class);
                 startService(NotchServiceIntent);
             }
-        }
-        else if(requestCode == ACCESSIBILITY_PERMISSION){
+        } else if (requestCode == ACCESSIBILITY_PERMISSION) {
             boolean accessibilityEnabled = Settings.Secure.getInt(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, 0) == 1;
             if (accessibilityEnabled) {
                 Intent intent = new Intent();
@@ -405,7 +364,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -496,7 +456,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
             startActivityForResult(intent, NOTIFICATION_PERMISSION_RC);
         } else {
-            if(action == 1) toggleDoNotDisturb();
+            if (action == 1) toggleDoNotDisturb();
             else {
                 if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
                     audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);

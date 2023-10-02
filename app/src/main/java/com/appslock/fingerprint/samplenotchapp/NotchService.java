@@ -24,8 +24,10 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -38,61 +40,13 @@ public class NotchService extends Service {
     private static final String CHANNEL_ID = "MyForegroundServiceChannel";
     private static final int NOTIFICATION_ID = 1;
 
+    private View overlay;
     private WindowManager windowManager;
-    private View overlayView;
-    Rect notchBounds = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-
-        Log.e("service_check", "service called....");
-        overlayView = View.inflate(getApplicationContext(), R.layout.notch_full_screen, null);
-        overlayView.setBackgroundColor(Color.TRANSPARENT);
-
-        overlayView.findViewById(R.id.fullscreen_content1).setOnClickListener(v -> {
-            Toast.makeText(this, "Notch Clicked.....", Toast.LENGTH_SHORT).show();
-        });
-
-        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
-                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
-                        WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                PixelFormat.TRANSLUCENT
-        );
-
-        params.gravity = Gravity.START | Gravity.TOP;
-        windowManager.addView(overlayView, params);
-
-        overlayView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-
-                    Log.e("service_check", "service - Touch Detected....");
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        WindowInsets windowInsets = v.getRootWindowInsets();
-                        if (windowInsets.getDisplayCutout() != null) {
-                            Log.e("service_check", "service - Notch Detected...");
-                            DisplayCutout displayCutout = windowInsets.getDisplayCutout();
-                            List<Rect> boundingRects = displayCutout.getBoundingRects();
-                            if (!boundingRects.isEmpty()) {
-                                for (Rect rect : boundingRects) notchBounds = rect;
-                            }
-                        }
-                    }
-                    if (notchBounds != null && notchBounds.contains((int) event.getX(), (int) event.getY())) {
-                        Log.e("service_check", "Service - Notch Touched and action is performed....");
-                    }
-                }
-                return true;
-            }
-        });
     }
 
     @Override
@@ -105,15 +59,40 @@ public class NotchService extends Service {
                 .build();
         startForeground(NOTIFICATION_ID, notification);
 
+        overlay = View.inflate(getApplicationContext(), R.layout.overlay_service, null);
+
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) Functions.dipToPixels(this, 24));
+        overlay.setLayoutParams(params);
+        // FullscreenOverlayLayout fullscreenlayout= overlay.findViewById(R.id.overlay_service_mainlay);
+        overlay.findViewById(R.id.button_notch).setOnClickListener(v -> {
+            Toast.makeText(this, "Notch Service - Button Clicked", Toast.LENGTH_SHORT).show();
+            Log.e("notchservice_check", "Notch Service - Button Clicked.....");
+        });
+
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                (int) Functions.dipToPixels(this, Functions.getStatusBarHeight(this)),
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR |
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                PixelFormat.TRANSLUCENT
+        );
+        overlay.setBackgroundColor(Color.BLUE);
+        layoutParams.gravity = Gravity.START | Gravity.TOP;
+        windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        windowManager.addView(overlay, layoutParams);
+
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        if (overlayView != null && windowManager != null) {
-            windowManager.removeView(overlayView);
-        }
         super.onDestroy();
+        if (overlay != null && windowManager != null) windowManager.removeView(overlay);
     }
 
     @Nullable

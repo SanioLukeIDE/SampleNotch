@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- /////////////////////////// Flashlight Toggle /////////////////////////// -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -24,6 +23,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission
+        android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
     <application
         android:allowBackup="true"
@@ -62,8 +68,9 @@
         <service
             android:name=".MyAccessibilityService"
             android:exported="true"
+            android:label="Notch Touch - Accessibility Service"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
+            <intent-filter android:priority="998">
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
 
