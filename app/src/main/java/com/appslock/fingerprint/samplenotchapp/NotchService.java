@@ -60,10 +60,9 @@ public class NotchService extends Service {
         startForeground(NOTIFICATION_ID, notification);
 
         overlay = View.inflate(getApplicationContext(), R.layout.overlay_service, null);
-
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) Functions.dipToPixels(this, 24));
+        FrameLayout.LayoutParams params= new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                (int) Functions.dipToPixels(this,30));
         overlay.setLayoutParams(params);
-        // FullscreenOverlayLayout fullscreenlayout= overlay.findViewById(R.id.overlay_service_mainlay);
         overlay.findViewById(R.id.button_notch).setOnClickListener(v -> {
             Toast.makeText(this, "Notch Service - Button Clicked", Toast.LENGTH_SHORT).show();
             Log.e("notchservice_check", "Notch Service - Button Clicked.....");
@@ -71,8 +70,10 @@ public class NotchService extends Service {
 
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
-                (int) Functions.dipToPixels(this, Functions.getStatusBarHeight(this)),
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                (int) Functions.dipToPixels(this, 30),
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
+                        WindowManager.LayoutParams.TYPE_PHONE,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                         WindowManager.LayoutParams.FLAG_FULLSCREEN |
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
@@ -81,6 +82,10 @@ public class NotchService extends Service {
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT
         );
+
+        /*layoutParams.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
+        layoutParams.layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        overlay.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);*/
         overlay.setBackgroundColor(Color.BLUE);
         layoutParams.gravity = Gravity.START | Gravity.TOP;
         windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
@@ -102,17 +107,15 @@ public class NotchService extends Service {
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "My Foreground Service Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                "My Foreground Service Channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+        );
 
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            if (notificationManager != null) {
-                notificationManager.createNotificationChannel(channel);
-            }
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        if (notificationManager != null) {
+            notificationManager.createNotificationChannel(channel);
         }
     }
 }

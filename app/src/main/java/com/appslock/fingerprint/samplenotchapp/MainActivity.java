@@ -256,13 +256,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.toggleMusicPlayPause.setOnClickListener(v -> {
-
-            v.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent) {
-                    return false;
-                }
-            });
             long eventtime = SystemClock.uptimeMillis();
             if (audioManager.isMusicActive()) {
                 KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE, 0);
